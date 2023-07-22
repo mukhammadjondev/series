@@ -198,4 +198,241 @@ window.addEventListener('DOMContentLoaded', () => {
     //         new MenuCard(img, altimg, title, descr, price, '.menu .container').render()
     //     })
     // })
+
+    // Form
+    const forms = document.querySelectorAll('form')
+
+    forms.forEach((form)=> {
+        bindPostData(form)
+    })
+
+    const msg = {
+        loading: 'Loading...',
+        success: 'Thanks for submitting our form',
+        failure: 'Something went wrong'
+    }
+
+    async function postData(url, data) {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: data,
+        })
+
+        return await res.json()
+    }
+
+    function bindPostData(form) {
+        form.addEventListener('submit', (e)=> {
+            e.preventDefault()
+
+            const statusMessage = document.createElement('div')
+            statusMessage.textContent = msg.loading
+            form.append(statusMessage)
+
+            const formData = new FormData(form)
+            const json = JSON.stringify(Object.fromEntries(formData.entries()))
+
+            postData("http://localhost:3000/request", json)
+            .then(data => {
+                console.log(data)
+                showThanksModal(msg.success)
+                form.reset()
+                statusMessage.remove()
+            })
+            .catch(()=>  showThanksModal(msg.failure))
+            .finally(()=> form.reset())
+
+            // const request = new XMLHttpRequest()
+            // request.open('POST', 'server/server.php')
+
+            // request.setRequestHeader('Content-Type', 'application/json')
+            // const obj = {}
+            // const formData = new FormData(form)
+            // formData.forEach((val, key)=> {
+            //     obj[key] = val
+            // })
+
+            // const json = JSON.stringify(obj)
+
+            // request.send(json)
+
+            // request.addEventListener('load', ()=> {
+            //     if(request.status === 200) {
+            //         console.log(request.response)
+            //         showThanksModal(msg.success)
+
+            //         form.reset()
+            //         setTimeout(()=> {
+            //             statusMessage.remove()
+            //         }, 2000)
+            //     } else {
+            //         showThanksModal(msg.failure)
+            //     }
+            // })
+        })
+    }
+
+    function showThanksModal(message) {
+        const prevModalDialog = document.querySelector('.modal__dialog')
+
+        prevModalDialog.classList.add('hide')
+        prevModalDialog.classList.remove('show')
+        openModal()
+
+        const thanksModal = document.createElement('div')
+        thanksModal.classList.add('modal__dialog')
+        thanksModal.innerHTML = `
+        <div class="modal__content">
+            <div data-close class="modal__close">&times;</div>
+            <div class="modal__title">${message}</div>
+        </div>
+        `
+        document.querySelector('.modal').append(thanksModal)
+
+        setTimeout(()=> {
+            thanksModal.remove()
+            prevModalDialog.classList.add('show')
+            prevModalDialog.classList.remove('hide')
+            closeModal()
+        }, 3000)
+    }
+
+    // Sliders
+    const sliders = document.querySelectorAll('.offer__slide'),
+        next = document.querySelector('.offer__slider-next'),
+        prev = document.querySelector('.offer__slider-prev'),
+        total = document.querySelector('#total'),
+        current = document.querySelector('#current'),
+        slidersWrapper = document.querySelector('.offer__slider-wrapper'),
+        sliderField = document.querySelector('.offer__slider-inner'),
+        width = window.getComputedStyle(slidersWrapper).width,
+        slider = document.querySelector('.offer__slider')
+
+        let slideIndex = 1
+        let offset = 0
+
+    // -------------*****  Carousel slider  *****-------------  //
+        if(sliders.length < 10) {
+            total.textContent = `0${sliders.length}`
+            current.textContent = `0${slideIndex}`
+        } else {
+            total.textContent = sliders.length
+            current.textContent = slideIndex
+        }
+
+        sliderField.style.width = 100 * sliders.length + '%'
+        sliderField.style.display = 'flex'
+        sliderField.style.transition = '.5s ease all'
+        slidersWrapper.style.overflow = 'hidden'
+
+        sliders.forEach(slider => {
+            slider.style.width = width
+        })
+
+        const indicators = document.createElement('ol')
+        const dots = []
+        indicators.classList.add('carousel-indicators')
+        slider.append(indicators)
+
+        for(i = 0; i < sliders.length; i++) {
+            const dot = document.createElement('li')
+            dot.setAttribute('data-slide-to', i + 1)
+            dot.classList.add('carousel-dot')
+            if(i == 0) {dot.style.opacity = 1}
+            indicators.append(dot)
+            dots.push(dot)
+        }
+
+        function mainStyleCode() {
+            if(sliders.length < 10) {
+                current.textContent = `0${slideIndex}`
+            } else {
+                current.textContent = slideIndex
+            }
+
+            dots.forEach(dot => dot.style.opacity = '.5')
+            dots[slideIndex - 1].style.opacity = '1'
+        }
+
+        next.addEventListener('click', ()=> {
+            if(offset == parseFloat(width) * (sliders.length - 1)) {
+                offset = 0
+            } else {
+                offset += parseFloat(width)
+            }
+            sliderField.style.transform = `translateX(-${offset}px)`
+
+            if(slideIndex == sliders.length) {
+                slideIndex = 1
+            } else {
+                slideIndex++
+            }
+
+            mainStyleCode()
+        })
+        prev.addEventListener('click', ()=> {
+            if(offset == 0) {
+                offset = parseFloat(width) * (sliders.length - 1)
+            } else {
+                offset -= parseFloat(width)
+            }
+            sliderField.style.transform = `translateX(-${offset}px)`
+
+            if(slideIndex == 1) {
+                slideIndex = sliders.length
+            } else {
+                slideIndex--
+            }
+
+            mainStyleCode()
+        })
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', (e)=> {
+                const slideTo = e.target.getAttribute('data-slide-to')
+                slideIndex = slideTo
+
+                offset = parseFloat(width) * (slideTo - 1)
+                sliderField.style.transform = `translateX(-${offset}px)`
+
+                mainStyleCode()
+            })
+        })
+
+
+
+    // -------------*****  Easy slider  *****-------------  //
+    // if(sliders.length < 10) {
+    //     total.textContent = `0${sliders.length}`
+    // } else {
+    //     total.textContent = sliders.length
+    // }
+
+    // showSlides(slideIndex)
+
+    // function showSlides(idx) {
+    //     if(idx > sliders.length) {
+    //         slideIndex = 1
+    //     }
+    //     if(idx < 1) {
+    //         slideIndex = sliders.length
+    //     }
+    //     sliders.forEach(item => item.style.display = 'none')
+    //     sliders[slideIndex - 1].style.display = 'block'
+
+    //     if(sliders.length < 10) {
+    //         current.textContent = `0${slideIndex}`
+    //     } else {
+    //         current.textContent = slideIndex
+    //     }
+    // }
+
+    // function plusSlides(idx) {
+    //     showSlides(slideIndex += idx)
+    // }
+    // next.addEventListener('click', ()=> plusSlides(1))
+    // prev.addEventListener('click', ()=> plusSlides(-1))
 })
