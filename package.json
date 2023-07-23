@@ -6,10 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["js", "html"],
+  "keywords": [
+    "js",
+    "html"
+  ],
   "author": "Muxammadjon Solijonov",
   "license": "ISC",
   "devDependencies": {
     "json-server": "^0.17.3"
+  },
+  "dependencies": {
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   }
 }
